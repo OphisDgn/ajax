@@ -1,47 +1,53 @@
 <!DOCTYPE html>
 <html lang="fr" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <title>Mon application en AJAX LOL</title>
-        <link rel="stylesheet" href="css/main.css">
-    </head>
-    <body>
-        <h1 class="h1">Ma super app météo </h1>
-        <!-- Div dans laquelle on veut afficher les réponses de notre API -->
-        <div id="api-response"></div>
-        <span class="wow" id="temp"></span>°C<br>
-        <span class="wow" id="pressure"></span>hPa <br>
-        <span class="wow" id="humidity"></span>%<br>
+  <head>
+    <meta charset="utf-8" />
+    <title>Mon application en AJAX LOL</title>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <h1 class="h1">Ma super app météo </h1>
+    <!-- Div dans laquelle on veut afficher les réponses de notre API -->
+    <div id="api-response"></div>
+    <span class="wow" id="temp"></span>°C<br />
+    <span class="wow" id="pressure"></span>hPa <br />
+    <span class="wow" id="humidity"></span>%<br />
+    <span class="wow" id="weatherIcon">X</span>
 
-        <script src="js/main.js"></script>
-        <script>
-            /*  méthode qui permet d'afficher la réponse d'une API à une requête donnée */
-            sendQuery('http://api.openweathermap.org/data/2.5/weather?zip=30100,it&appid=8600d7d564076529872375d01d7d93a2');
-            /*  méthode qui permet de récupérer la réponse d'une requête AJAX
-                et de traiter le résultat lorsqu'elle l'aura reçu au moyen d'un "callback",
-                c'est à dire une fonction qui sera exécutée lors de la réception de la réponse.
-                Dans l'exemple ci-dessous, on demande la météo, en méthode "GET", puis on affiche "Pouet pouet"
-                à l'écran au moyen d'une méthode passée en troisième argument (stupide mais simple pour commencer à comprendre).
-                Dans l'exemple d'après, on demande la météo en méthode "GET", puis on précise que
-                lorsque l'on aura la réponse, on doit exécuter la fonction, qui prend en paramètre
-                le contenu même de la réponse (cf l'appel à "callbackFunction()" dans main.js.
-                ici, nous voulons tout simplement afficher la réponse telle qu'elle est renvoyée par
-                le serveur (ie. une chaine de caractères), puis on la convertit en Json pour
-                l'afficher à nouveau, dans un format plus simple à manipuler.
-             */
-            sendQueryWithCallback(
-                    'http://api.openweathermap.org/data/2.5/weather?zip=30100,it&appid=8600d7d564076529872375d01d7d93a2',
-                    'GET',
-                    () => { alert('Pouet pouet')}
-                );
-            sendQueryWithCallback(
-                    'http://api.openweathermap.org/data/2.5/weather?zip=30100,it&appid=8600d7d564076529872375d01d7d93a2',
-                    'GET',
-                    (response) => {
-                        console.log('Réponse de l\'api au format String', response);
-                        response = JSON.parse(response);
-                        console.log('Réponse de l\'api au format Json', response)}
-                );
-        </script>
-    </body>
+    <form action="javascript:void(0);" onsubmit="findWeatherByCity(this)">
+      <label for="city">Quelle est la ville dont vous voulez la météo ?</label>
+      <input id="city" type="text" placeholder="Saisissez la ville " />
+      <input type="submit" value="Trouver la météo" />
+    </form>
+
+    <script src="js/main.js"></script>
+    <script>
+      async function findWeatherByCity(form) {
+        const city = form.city.value;
+        try {
+          // destructuring object to get only wanted field
+          const {
+            main: { temp, pressure, humidity },
+            weather
+          } = await sendQuery(
+            `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=8600d7d564076529872375d01d7d93a2&units=metric`
+          );
+          // assign received value to span
+          document.getElementById('temp').textContent = temp;
+          document.getElementById('pressure').textContent = pressure;
+          document.getElementById('humidity').textContent = humidity;
+          // build icon
+          const weatherIcon = document.createElement('img');
+          weatherIcon.src = `http://openweathermap.org/img/w/${
+            weather[0].icon
+          }.png`;
+          document.getElementById('weatherIcon').innerHTML = '';
+          document.getElementById('weatherIcon').appendChild(weatherIcon);
+        } catch (e) {
+          // log error
+          console.error(e);
+        }
+      }
+    </script>
+  </body>
 </html>
